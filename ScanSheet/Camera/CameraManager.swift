@@ -20,6 +20,8 @@ class CameraManager: NSObject, ObservableObject {
     @Published var permissionStatus: AVAuthorizationStatus = .notDetermined
     @Published var capturedImage: UIImage?
     
+    private var capturedImageURL: URL?
+    
     private var photoOutput = AVCapturePhotoOutput()
     private var videoDeviceInput: AVCaptureDeviceInput?
     
@@ -123,7 +125,6 @@ class CameraManager: NSObject, ObservableObject {
     }
     
     func capturePhoto() {
-        // iOS 15:
         let settings = AVCapturePhotoSettings()
         settings.isHighResolutionPhotoEnabled = false
         isLoading = true
@@ -146,32 +147,89 @@ class CameraManager: NSObject, ObservableObject {
             return nil
         }
     }
+        
+    /// Descarta a foto atual e volta para a câmera.
+    func retakePhoto() {
+        if let url = capturedImageURL {
+            try? FileManager.default.removeItem(at: url)
+            print("Arquivo temporário removido: \(url)")
+        }
+
+        DispatchQueue.global(qos: .userInitiated).async {
+            self.session.startRunning() // Reinicia a câmera
+            DispatchQueue.main.async {
+                self.capturedImage = nil // Limpa a imagem, escondendo o preview
+                self.capturedImageURL = nil
+            }
+        }
+    }
+    
+    /// Converte a imagem para dados binários e a exibe no log.
+    func confirmPhoto() {
+        guard let image = capturedImage else {
+            print("Não há foto para confirmar.")
+            return
+        }
+        
+        // Converte a UIImage para Dados (binário) com qualidade máxima.
+        guard let imageData = image.jpegData(compressionQuality: 1.0) else {
+            print("Não foi possível converter a imagem para dados binários.")
+            return
+        }
+        
+        // Exibe os dados binários no log.
+        print("--- DADOS BINÁRIOS DA IMAGEM (JPEG Qualidade Máxima) ---")
+        print(imageData)
+        print("--- FIM DOS DADOS BINÁRIOS (Tamanho: \(imageData.count) bytes) ---")
+        
+        // TODO: Enviar 'imageData' para o backend ou processar conforme necessário.
+
+        // Limpa o estado para permitir tirar outra foto ou fechar a tela.
+        DispatchQueue.main.async {
+            self.capturedImage = nil
+        }
+        
+        // Reinicia a sessão se ela não estiver rodando (caso a view não seja dispensada)
+        if !session.isRunning {
+             DispatchQueue.global(qos: .userInitiated).async {
+                self.session.startRunning()
+            }
+        }
+    }
 }
 
 // MARK: - AVCapturePhotoCaptureDelegate
 extension CameraManager: AVCapturePhotoCaptureDelegate {
     func photoOutput(_ output: AVCapturePhotoOutput, didFinishProcessingPhoto photo: AVCapturePhoto, error: Error?) {
+        // Para a sessão para economizar bateria e mostrar o preview estático
+        session.stopRunning()
+        
         DispatchQueue.main.async { [weak self] in
             self?.isLoading = false
         }
         
         if let error = error {
             print("Erro ao capturar foto: \(error)")
+            session.startRunning() // Reinicia a câmera em caso de erro
             return
         }
         
         guard let imageData = photo.fileDataRepresentation(),
               let image = UIImage(data: imageData) else {
             print("Não foi possível processar a imagem")
+            session.startRunning() // Reinicia a câmera em caso de erro
             return
         }
         
-        DispatchQueue.main.async { [weak self] in
-            self?.capturedImage = image
+        // Salvar a imagem temporariamente
+        if let tempURL = self.saveImageTemporarily(image) {
+            print("Imagem salva temporariamente em: \(tempURL)")
             
-            // Salvar a imagem temporariamente
-            if let tempURL = self?.saveImageTemporarily(image) {
-                print("Imagem salva temporariamente em: \(tempURL)")
+            // Atualiza a UI no thread principal
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                self.capturedImage = image
+                self.capturedImageURL = tempURL
                 
                 // TODO: Processar imagem e enviar para backend
                 NotificationCenter.default.post(
@@ -180,6 +238,8 @@ extension CameraManager: AVCapturePhotoCaptureDelegate {
                     userInfo: ["imageURL": tempURL, "image": image]
                 )
             }
+        } else {
+            session.startRunning() // Reinicia se o salvamento falhar
         }
     }
 }

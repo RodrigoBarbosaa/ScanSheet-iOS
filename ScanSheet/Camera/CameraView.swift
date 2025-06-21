@@ -13,26 +13,72 @@ struct CameraView: View {
             CameraPreview(session: cameraManager.session)
                 .ignoresSafeArea()
             
-            // vai em cima da camera
-            VStack {
-                Spacer()
-                HStack {
+            if let capturedImage = cameraManager.capturedImage {
+                // Fundo preto para focar na foto
+                Color.black.ignoresSafeArea()
+                
+                VStack {
+                    // Exibe a imagem capturada
+                    Image(uiImage: capturedImage)
+                        .resizable()
+                        .scaledToFit()
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
                     
-                    Button(action: {
-                        cameraManager.capturePhoto()
-                    }) {
-                        Circle()
-                            .fill(Color.white)
-                            .frame(width: 70, height: 70)
-                            .overlay(
-                                Circle()
-                                    .stroke(Color.black, lineWidth: 2)
-                                    .frame(width: 60, height: 60)
-                            )
+                    Spacer()
+                    
+                    // Botões de Ação
+                    HStack(spacing: 40) {
+                        // Botão Cancelar
+                        Button(action: {
+                            // Ação para descartar a foto, apagar o arquivo e voltar para a câmera
+                            cameraManager.retakePhoto()
+                        }) {
+                            Text("Cancelar")
+                                .font(.headline)
+                                .foregroundColor(.black)
+                                .padding()
+                                .frame(minWidth: 120)
+                                .background(Color.white)
+                                .clipShape(Capsule())
+                        }
+                        
+                        // Botão Confirmar
+                        Button(action: {
+                            // Ação para confirmar a foto. O salvamento e a notificação já ocorreram.
+                            cameraManager.confirmPhoto()
+                        }) {
+                            Text("Confirmar")
+                                .font(.headline)
+                                .foregroundColor(.white)
+                                .padding()
+                                .frame(minWidth: 120)
+                                .background(Color.accentColor)
+                                .clipShape(Capsule())
+                        }
                     }
-                    .disabled(!cameraManager.isSessionRunning)
+                    .padding(.bottom, 50)
                 }
-                .padding(.bottom, 30)
+            } else {
+                // vai em cima da camera
+                VStack {
+                    Spacer()
+                    HStack {
+                        Button(action: {
+                            cameraManager.capturePhoto()
+                        }) {
+                            Circle()
+                                .fill(Color.white)
+                                .frame(width: 70, height: 70)
+                                .overlay(
+                                    Circle()
+                                        .stroke(Color.gray, lineWidth: 2)
+                                        .frame(width: 60, height: 60)
+                                )
+                        }
+                        .disabled(!cameraManager.isSessionRunning)
+                    }
+                    .padding(.bottom, 30)
+                }
             }
             
             if cameraManager.isLoading {

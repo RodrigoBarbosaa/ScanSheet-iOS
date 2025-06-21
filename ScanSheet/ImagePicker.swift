@@ -4,6 +4,8 @@
 //
 //  Created by Rodrigo Barbosa on 07/06/25.
 //
+//
+// Arquivo que controla a lógica para abrir galeria do usuário
 
 import Foundation
 import PhotosUI
@@ -66,27 +68,23 @@ struct ImagePicker: UIViewControllerRepresentable {
             // Se passou em todas as validações, salvar a imagem
             parent.selectedImage = image
             
-            // Salvar temporariamente no diretório de documentos
-            saveImageTemporarily(image: image, imageData: imageData)
+            // converter em byte e printar
+            guard let imageData = image.jpegData(compressionQuality: 1.0) else {
+                print("Não foi possível converter a imagem para dados binários.")
+                return
+            }
+            // Exibe os dados binários no log.
+            print("--- DADOS BINÁRIOS DA IMAGEM (JPEG Qualidade Máxima) ---")
+            print(imageData)
+            print("--- FIM DOS DADOS BINÁRIOS (Tamanho: \(imageData.count) bytes) ---")
+            
+            // TODO: Enviar 'imageData' para o backend ou processar conforme necessário.
             
             parent.dismiss()
         }
         
         func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
             parent.dismiss()
-        }
-        
-        private func saveImageTemporarily(image: UIImage, imageData: Data) {
-            let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
-            let fileName = "temp_image_\(Date().timeIntervalSince1970).jpg"
-            let fileURL = documentsDirectory.appendingPathComponent(fileName)
-            
-            do {
-                try imageData.write(to: fileURL)
-                print("Imagem salva temporariamente em: \(fileURL.path)")
-            } catch {
-                print("Erro ao salvar imagem temporariamente: \(error)")
-            }
         }
     }
 }
