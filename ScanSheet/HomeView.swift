@@ -10,7 +10,7 @@ import SwiftUI
 struct HomeView: View {
     
     @EnvironmentObject var router: AppRouter
-    @State private var selectedImage: UIImage?
+    @State private var selectedImages: [UIImage] = []
     @State private var showingImagePicker = false
     @State private var showingAlert = false
     @State private var alertMessage = ""
@@ -60,46 +60,30 @@ struct HomeView: View {
                             .font(.system(size: 48, weight: .bold, design: .rounded))
                             .foregroundColor(.white)
                         
-                        HStack(spacing: 8) {
-                            Image(systemName: "bolt.fill")
-                                .foregroundColor(.yellow)
-                                .font(.system(size: 16))
-                            
-                            Text("Images to Excel, Instantly")
-                                .font(.system(size: 20, weight: .medium))
-                                .foregroundColor(.white.opacity(0.9))
-                        }
                     }
                     
                     // Description
                     Text("Transform any table or spreadsheet photo into a fully editable Excel file with AI-powered precision")
                         .font(.system(size: 16, weight: .regular))
-                        .foregroundColor(.white.opacity(0.8))
+                        .foregroundColor(.white.opacity(0.9))
                         .multilineTextAlignment(.center)
                         .lineSpacing(2)
                         .padding(.horizontal)
                 }
                 .padding(.top, 60)
                 
+                Spacer()
+                
                 // Action cards
                 VStack(spacing: 16) {
                     ActionCard(
                         icon: "camera.fill",
-                        title: "Take a Photo",
-                        subtitle: "Capture spreadsheet data instantly",
+                        title: "Upload Spreadsheet",
+                        subtitle: "Via Camera or Gallery",
                         gradientColors: [Color.blue.opacity(0.8), Color.cyan.opacity(0.6)],
-                        action: {router.navigate(to: .camera)}
+                        action: {router.navigate(to: .fichaSelection)}
                         
                     )
-                    
-                    ActionCard(
-                        icon: "square.and.arrow.up",
-                        title: "Upload Image",
-                        subtitle: "Convert existing photos to Excel",
-                        gradientColors: [Color.purple.opacity(0.8), Color.pink.opacity(0.6)],
-                        action: {showingImagePicker = true}
-                    )
-                    
                     ActionCard(
                         icon: "square.and.arrow.up.on.square",
                         title: "Share Sheets",
@@ -109,14 +93,8 @@ struct HomeView: View {
                     )
                 }
                 .padding(.horizontal, 20)
-                
-                Spacer()
+                .padding(.bottom, 40)
             }
-        }
-        .sheet(isPresented: $showingImagePicker) {
-            ImagePicker(selectedImage: $selectedImage,
-                       showingAlert: $showingAlert,
-                       alertMessage: $alertMessage)
         }
         .alert("Erro", isPresented: $showingAlert) {
             Button("OK") { }

@@ -12,7 +12,7 @@ import PhotosUI
 import SwiftUI
 
 struct ImagePicker: UIViewControllerRepresentable {
-    @Binding var selectedImage: UIImage?
+    @Binding var selectedImage: UIImage? // uma única imagem
     @Binding var showingAlert: Bool
     @Binding var alertMessage: String
     @Environment(\.dismiss) private var dismiss
@@ -65,20 +65,11 @@ struct ImagePicker: UIViewControllerRepresentable {
                 return
             }
             
-            // Se passou em todas as validações, salvar a imagem
+            // Atribuir a imagem selecionada
             parent.selectedImage = image
             
-            // converter em byte e printar
-            guard let imageData = image.jpegData(compressionQuality: 1.0) else {
-                print("Não foi possível converter a imagem para dados binários.")
-                return
-            }
-            // Exibe os dados binários no log.
-            print("--- DADOS BINÁRIOS DA IMAGEM (JPEG Qualidade Máxima) ---")
-            print(imageData)
-            print("--- FIM DOS DADOS BINÁRIOS (Tamanho: \(imageData.count) bytes) ---")
-            
-            // TODO: Enviar 'imageData' para o backend ou processar conforme necessário.
+            print("--- IMAGEM SELECIONADA DA GALERIA ---")
+            print("Tamanho: \(imageData.count) bytes")
             
             parent.dismiss()
         }

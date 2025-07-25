@@ -8,49 +8,26 @@
 import Foundation
 import SwiftUI
 
-enum AppRoute: Hashable {
-    case home
-    case camera
-}
+import SwiftUI
 
-struct NavigationState {
-    var activeRoute: AppRoute? = nil
+// Defina as rotas possíveis da sua aplicação
+enum AppRoute: Hashable {
+    case fichaSelection
+    case uploadStep
 }
 
 class AppRouter: ObservableObject {
-    @Published var navigationState = NavigationState()
-    
+    @Published var path = [AppRoute]()
+
     func navigate(to route: AppRoute) {
-        navigationState.activeRoute = route
+        path.append(route)
     }
-    
+
     func goBack() {
-        navigationState.activeRoute = nil
+        _ = path.popLast()
     }
-}
-// entender o que isso faz
-struct NavigationManager: View {
-    @EnvironmentObject var router: AppRouter
-    let content: AnyView
-    
-    init<Content: View>(@ViewBuilder content: @escaping () -> Content) {
-        self.content = AnyView(content())
-    }
-    
-    var body: some View {
-        content
-            .background(navigationLinks)
-    }
-    
-    @ViewBuilder
-    private var navigationLinks: some View {
-        Group {
-            NavigationLink(
-                destination: CameraView()
-                    .onDisappear { router.goBack() },
-                
-                isActive: .constant(router.navigationState.activeRoute == .camera)
-            ) { EmptyView() }
-        }
+
+    func goBackToRoot() {
+        path.removeAll()
     }
 }

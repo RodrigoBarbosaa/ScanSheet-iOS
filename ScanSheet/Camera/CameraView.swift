@@ -1,10 +1,19 @@
+//
+//  CameraView.swift
+//  ScanSheet
+//
+//  Created by Rodrigo Barbosa on 07/06/25.
+//
+//
+// Arquivo que controla o preview de camera
+
 import SwiftUI
 import AVFoundation
 
 struct CameraView: View {
     @StateObject private var cameraManager = CameraManager()
-    @State private var showingImagePicker = false
     @State private var showingPermissionAlert = false
+    @Binding var capturedImage: UIImage? // Binding para retornar a imagem
     @Environment(\.dismiss) private var dismiss
     
     var body: some View {
@@ -13,13 +22,13 @@ struct CameraView: View {
             CameraPreview(session: cameraManager.session)
                 .ignoresSafeArea()
             
-            if let capturedImage = cameraManager.capturedImage {
+            if let localCapturedImage = cameraManager.capturedImage {
                 // Fundo preto para focar na foto
                 Color.black.ignoresSafeArea()
                 
                 VStack {
                     // Exibe a imagem capturada
-                    Image(uiImage: capturedImage)
+                    Image(uiImage: localCapturedImage)
                         .resizable()
                         .scaledToFit()
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -30,7 +39,7 @@ struct CameraView: View {
                     HStack(spacing: 40) {
                         // Botão Cancelar
                         Button(action: {
-                            // Ação para descartar a foto, apagar o arquivo e voltar para a câmera
+                            // Ação para descartar a foto e voltar para a câmera
                             cameraManager.retakePhoto()
                         }) {
                             Text("Cancelar")
@@ -44,8 +53,10 @@ struct CameraView: View {
                         
                         // Botão Confirmar
                         Button(action: {
-                            // Ação para confirmar a foto. O salvamento e a notificação já ocorreram.
-                            cameraManager.confirmPhoto()
+                            // Confirmar a foto e retornar para a tela anterior
+                            capturedImage = localCapturedImage
+                            print("--- IMAGEM CAPTURADA PELA CÂMERA ---")
+                            dismiss()
                         }) {
                             Text("Confirmar")
                                 .font(.headline)
@@ -59,9 +70,28 @@ struct CameraView: View {
                     .padding(.bottom, 50)
                 }
             } else {
-                // vai em cima da camera
+                // Controles da câmera
                 VStack {
+                    // Botão de fechar no topo
+                    HStack {
+                        Button(action: {
+                            dismiss()
+                        }) {
+                            Image(systemName: "xmark")
+                                .font(.system(size: 18, weight: .semibold))
+                                .foregroundColor(.white)
+                                .frame(width: 32, height: 32)
+                                .background(Color.black.opacity(0.6))
+                                .clipShape(Circle())
+                        }
+                        Spacer()
+                    }
+                    .padding(.top, 50)
+                    .padding(.horizontal, 20)
+                    
                     Spacer()
+                    
+                    // Botão de captura
                     HStack {
                         Button(action: {
                             cameraManager.capturePhoto()
@@ -77,7 +107,7 @@ struct CameraView: View {
                         }
                         .disabled(!cameraManager.isSessionRunning)
                     }
-                    .padding(.bottom, 30)
+                    .padding(.bottom, 50)
                 }
             }
             

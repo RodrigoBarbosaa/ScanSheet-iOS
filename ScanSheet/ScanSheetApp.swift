@@ -10,15 +10,23 @@ import SwiftUI
 @main
 struct ScanSheetApp: App {
     @StateObject private var router = AppRouter()
+
     var body: some Scene {
         WindowGroup {
-            NavigationView {
-                NavigationManager {
-                    HomeView()
-                }
-                .environmentObject(router)
+            NavigationStack(path: $router.path) {
+                HomeView()
+                    .navigationDestination(for: AppRoute.self) { route in
+                        // Defina para qual view cada rota deve levar
+                        switch route {
+                        case .fichaSelection:
+                            FichaSelectionView()
+                        case .uploadStep:
+                            UploadStepView()
+                        }
+                        
+                    }
             }
-            .navigationViewStyle(StackNavigationViewStyle())
+            .environmentObject(router) 
         }
     }
 }
