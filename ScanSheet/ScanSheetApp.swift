@@ -22,6 +22,8 @@ struct ScanSheetApp: App {
                             FichaSelectionView()
                         case .uploadStep:
                             UploadStepView()
+                        case .exportResults:
+                            ExportResultsView()
                         }
                         
                     }

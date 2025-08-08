@@ -93,9 +93,7 @@ struct HomeView: View {
                         title: "Share Sheets",
                         subtitle: "Export and collaborate easily",
                         gradientColors: [Color.green.opacity(0.7), Color.mint.opacity(0.6)],
-                        action: {
-                            
-                        }
+                        action: { router.navigate(to: .exportResults)}
                     )
                 }
                 .padding(.horizontal, 20)

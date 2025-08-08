@@ -141,50 +141,49 @@ class CSVHandler {
         }
         
         var csvLines: [String] = []
-        
-        // Extrair todos os headers únicos de todas as fichas
         var allKeys: Set<String> = []
         
+        // PRIMEIRA PASSADA: Coletar todas as chaves possíveis
         for dict in dataArray {
-            // Adicionar chaves do nível superior
-            allKeys.formUnion(Set(dict.keys))
-            
-            // Se existe um campo "content", adicionar suas chaves também
-            if let content = dict["content"] as? [String: Any] {
-                // Prefixar com "content_" para evitar conflitos
-                let contentKeys = content.keys.map { "content_\($0)" }
-                allKeys.formUnion(Set(contentKeys))
+            for (key, value) in dict {
+                if key == "content", let contentDict = value as? [String: Any] {
+                    // Para o campo "content", expandir suas chaves
+                    for contentKey in contentDict.keys {
+                        allKeys.insert(contentKey)
+                    }
+                } else {
+                    // Para outros campos, usar diretamente
+                    allKeys.insert(key)
+                }
             }
         }
         
-        // Converter para array ordenado
-        let sortedKeys = Array(allKeys).sorted()
+        // Converter para array ordenado (remover "content" se existir, pois já expandimos)
+        let sortedKeys = Array(allKeys).filter { $0 != "content" }.sorted()
         
-        print("Campos encontrados: \(sortedKeys)")
+        print("Campos encontrados após expansão: \(sortedKeys)")
+        print("Total de colunas: \(sortedKeys.count)")
         
         // Cabeçalho do CSV
         csvLines.append(sortedKeys.joined(separator: ","))
         
-        // Processar cada ficha
+        // SEGUNDA PASSADA: Processar cada ficha
         for (index, dict) in dataArray.enumerated() {
             var row: [String] = []
+            
+            // Extrair content se existir
+            let contentDict = dict["content"] as? [String: Any] ?? [:]
             
             for key in sortedKeys {
                 var value = ""
                 
-                if key.hasPrefix("content_") {
-                    // Campo do content
-                    let contentKey = String(key.dropFirst(8)) // Remove "content_"
-                    if let content = dict["content"] as? [String: Any],
-                       let contentValue = content[contentKey] {
-                        value = formatValue(contentValue)
-                    }
-                } else {
-                    // Campo do nível superior
-                    if let directValue = dict[key] {
-                        value = formatValue(directValue)
-                    }
+                // Procurar primeiro no content, depois no nível superior
+                if let contentValue = contentDict[key] {
+                    value = formatValue(contentValue)
+                } else if let directValue = dict[key], key != "content" {
+                    value = formatValue(directValue)
                 }
+                // Se não encontrou em nenhum lugar, fica vazio
                 
                 row.append(escapeCSVField(value))
             }
@@ -198,8 +197,8 @@ class CSVHandler {
         
         let csvContent = csvLines.joined(separator: "\n")
         print("CSV criado com \(csvLines.count) linhas e \(sortedKeys.count) colunas")
-        print("Primeiros 300 caracteres do CSV:")
-        print(String(csvContent.prefix(300)))
+        print("Primeiros 500 caracteres do CSV:")
+        print(String(csvContent.prefix(500)))
         
         return csvContent
     }
@@ -362,23 +361,5 @@ class CSVHandler {
         formatter.allowedUnits = [.useKB, .useMB]
         formatter.countStyle = .file
         return formatter.string(fromByteCount: Int64(bytes))
-    }
-    
-    /// Compartilhar arquivo CSV via UIActivityViewController
-    func shareCSVFile(_ fileURL: URL, from viewController: UIViewController) {
-        print("--- COMPARTILHANDO ARQUIVO CSV ---")
-        
-        let activityViewController = UIActivityViewController(activityItems: [fileURL], applicationActivities: nil)
-        
-        // Para iPad
-        if let popover = activityViewController.popoverPresentationController {
-            popover.sourceView = viewController.view
-            popover.sourceRect = CGRect(x: viewController.view.bounds.midX, y: viewController.view.bounds.midY, width: 0, height: 0)
-            popover.permittedArrowDirections = []
-        }
-        
-        viewController.present(activityViewController, animated: true) {
-            print("Activity view controller apresentado")
-        }
     }
 }

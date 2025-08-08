@@ -8,12 +8,10 @@
 import Foundation
 import SwiftUI
 
-import SwiftUI
-
-// Defina as rotas possíveis da sua aplicação
 enum AppRoute: Hashable {
     case fichaSelection
     case uploadStep
+    case exportResults
 }
 
 class AppRouter: ObservableObject {

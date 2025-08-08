@@ -117,10 +117,11 @@ func doRequest(payload: [String: Any]) {
                             }
                             
                             print("Dados descriptografados com sucesso")
-                            print("CSV descriptografado (primeiros 100 caracteres): \(String(decryptedCSVString.prefix(100)))")
+                            print("CSV descriptografado (primeiros 100 caracteres): \(String(decryptedCSVString.prefix(400)))")
                             
                             // Enviar para o CSVHandler
                             let finalCSVData = decryptedCSVString
+                            
                             CSVHandler.shared.processAndSaveCSV(from: finalCSVData) { result in
                                 switch result {
                                 case .success(let fileURL):
