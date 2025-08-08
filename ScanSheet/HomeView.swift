@@ -14,6 +14,10 @@ struct HomeView: View {
     @State private var showingImagePicker = false
     @State private var showingAlert = false
     @State private var alertMessage = ""
+    @State private var showingShareSheet = false
+    @State private var fileToShare: URL?
+    @State private var showingNoFilesAlert = false
+    @State private var savedFilesCount = 0
     
     var body: some View {
         ZStack {
@@ -89,7 +93,9 @@ struct HomeView: View {
                         title: "Share Sheets",
                         subtitle: "Export and collaborate easily",
                         gradientColors: [Color.green.opacity(0.7), Color.mint.opacity(0.6)],
-                        action: {}
+                        action: {
+                            
+                        }
                     )
                 }
                 .padding(.horizontal, 20)
@@ -189,3 +195,5 @@ struct GridPatternView: View {
 #Preview {
     HomeView()
 }
+
+

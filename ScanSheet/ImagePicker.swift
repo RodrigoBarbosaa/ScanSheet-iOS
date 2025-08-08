@@ -56,7 +56,7 @@ struct ImagePicker: UIViewControllerRepresentable {
             }
             
             // Validar tamanho da imagem (5MB = 5 * 1024 * 1024 bytes)
-            let maxSizeInBytes = 5 * 1024 * 1024
+            let maxSizeInBytes = 10 * 1024 * 1024
             if imageData.count > maxSizeInBytes {
                 let sizeInMB = Double(imageData.count) / (1024 * 1024)
                 parent.alertMessage = String(format: "Imagem muito grande (%.1f MB). O tamanho máximo é 5MB.", sizeInMB)
