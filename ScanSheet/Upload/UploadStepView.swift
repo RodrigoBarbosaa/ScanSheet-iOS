@@ -18,6 +18,10 @@ struct UploadStepView: View {
     @State private var showingAlert = false
     @State private var alertMessage = ""
     
+    // Estados do modal de carregamento
+    @State private var showingLoadingModal = false
+    @State private var requestState: RequestState = .loading
+    
     let gradientColors = [Color.blue.opacity(0.8), Color.cyan.opacity(0.6)]
     
     var bothImagesLoaded: Bool {
@@ -120,7 +124,19 @@ struct UploadStepView: View {
                 // Send Button
                 Button(action: {
                     if let img1 = image1, let img2 = image2 {
-                        createRequest(images: [img1, img2])
+                        showingLoadingModal = true
+                        requestState = .loading
+                        
+                        createRequestWithCallback(images: [img1, img2]) { result in
+                            DispatchQueue.main.async {
+                                switch result {
+                                case .success:
+                                    requestState = .success
+                                case .failure(let error):
+                                    requestState = .failure(error)
+                                }
+                            }
+                        }
                     }
                 }) {
                     HStack(spacing: 12) {
@@ -176,6 +192,20 @@ struct UploadStepView: View {
         } message: {
             Text(alertMessage)
         }
+        .overlay(
+            // Loading Modal Overlay
+            Group {
+                if showingLoadingModal {
+                    LoadingModalView(
+                        isPresented: $showingLoadingModal,
+                        requestState: requestState,
+                        onSuccess: {
+                            router.navigate(to: .exportResults)
+                        }
+                    )
+                }
+            }
+        )
     }
 }
 

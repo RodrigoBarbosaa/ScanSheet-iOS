@@ -9,7 +9,7 @@ import SwiftUI
 
 struct FichaSelectionView: View {
     @EnvironmentObject var router: AppRouter
-    @State private var selectedFicha = "Cadastro individual SUS"
+    @State private var selectedFicha: String = "Cadastro individual SUS"
     
     let fichaOptions = ["Cadastro individual SUS", "Geral"]
     let gradientColors = [Color.blue.opacity(0.8), Color.cyan.opacity(0.6)]
@@ -98,7 +98,7 @@ struct FichaSelectionView: View {
                 
                 // Continue Button
                 Button(action: {
-                    print("Ficha selecionada: \(selectedFicha)") //TODO: passar como parametro
+                    print("Ficha selecionada: \(selectedFicha)")
                     router.navigate(to: .uploadStep)
                 }) {
                     HStack(spacing: 12) {
