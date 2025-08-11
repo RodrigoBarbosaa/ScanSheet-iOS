@@ -55,33 +55,45 @@ class CSVHandler {
                 // Recursivamente chamar o método com a string decodificada
                 processAndSaveCSV(from: jsonAsString, completion: completion)
             }
-            // Tentar como array de strings que contêm JSON
+            // Tentar como array de strings que contêm JSON (LÓGICA AJUSTADA AQUI)
             else if let stringArray = try JSONSerialization.jsonObject(with: jsonData) as? [String] {
-                print("🔄 Array de strings JSON detectado, processando \(stringArray.count) items...")
+                print("🔄 Array de strings JSON detectado, mesclando \(stringArray.count) items em um único registro...")
                 
-                var fichasArray: [[String: Any]] = []
-                
+                var combinedData: [String: Any] = [:]
+                var combinedContent: [String: Any] = [:]
+
                 for jsonStringItem in stringArray {
-                    guard let itemData = jsonStringItem.data(using: .utf8) else {
-                        print("⚠️ Erro ao converter string item para Data")
+                    guard let itemData = jsonStringItem.data(using: .utf8),
+                          let itemDict = try JSONSerialization.jsonObject(with: itemData) as? [String: Any] else {
+                        print("⚠️ Erro ao decodificar item string para dicionário JSON")
                         continue
                     }
                     
-                    if let fichaObject = try JSONSerialization.jsonObject(with: itemData) as? [String: Any] {
-                        fichasArray.append(fichaObject)
-                    } else {
-                        print("⚠️ Item não é um objeto JSON válido")
+                    // Mescla o dicionário 'content'
+                    if let contentDict = itemDict["content"] as? [String: Any] {
+                        combinedContent.merge(contentDict) { (current, _) in current }
+                    }
+                    
+                    // Mescla outras chaves de nível superior (exceto 'content')
+                    for (key, value) in itemDict where key != "content" {
+                        combinedData[key] = value
                     }
                 }
                 
-                if !fichasArray.isEmpty {
-                    print("✅ \(fichasArray.count) fichas processadas do array de strings")
+                // Adiciona o conteúdo mesclado de volta ao objeto principal
+                if !combinedContent.isEmpty {
+                    combinedData["content"] = combinedContent
+                }
+
+                if !combinedData.isEmpty {
+                    print("✅ Dados mesclados com sucesso. Total de chaves em 'content': \(combinedContent.count)")
+                    let fichasArray = [combinedData] // Array com um único dicionário mesclado
                     let csvContent = convertDictionaryArrayToCSV(fichasArray)
                     saveCSVFile(content: csvContent) { result in
                         completion(result)
                     }
                 } else {
-                    throw NSError(domain: "CSVHandler", code: 3, userInfo: [NSLocalizedDescriptionKey: "Nenhuma ficha válida encontrada no array de strings"])
+                    throw NSError(domain: "CSVHandler", code: 4, userInfo: [NSLocalizedDescriptionKey: "Nenhum dado válido encontrado para mesclar no array de strings"])
                 }
             }
             else {

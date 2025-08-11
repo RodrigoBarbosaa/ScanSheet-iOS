@@ -60,7 +60,7 @@ func createRequestWithCallback(images: [UIImage], completion: @escaping (Request
 func doRequestWithCallback(payload: [String: Any], completion: @escaping (RequestResult) -> Void) {
     print("--- INICIANDO REQUISIÇÃO PARA O SERVIDOR ---")
     
-    guard let url = URL(string: "https://scansheet-api.onrender.com/process-image") else {
+    guard let url = URL(string: "https://scansheet-api-6wfd.onrender.com/process-image") else {
         print("ERRO: URL inválida")
         completion(.failure("URL do servidor inválida"))
         return
@@ -107,6 +107,22 @@ func doRequestWithCallback(payload: [String: Any], completion: @escaping (Reques
             print("Status Code: \(httpResponse.statusCode)")
             print("Headers: \(httpResponse.allHeaderFields)")
             
+            guard let data = data else {
+                completion(.failure("Nenhum dado recebido do servidor"))
+                return
+            }
+            
+            print("--- DADOS DA RESPOSTA ---")
+            print("Tamanho da resposta: \(data.count) bytes")
+            
+            guard let responseString = String(data: data, encoding: .utf8) else {
+                completion(.failure("Erro ao decodificar resposta do servidor"))
+                return
+            }
+            
+            print("Conteúdo da resposta:")
+            print(responseString)
+            
             // Verificar código de status HTTP
             guard 200...299 ~= httpResponse.statusCode else {
                 let errorMessage: String
@@ -128,22 +144,6 @@ func doRequestWithCallback(payload: [String: Any], completion: @escaping (Reques
                 completion(.failure(errorMessage))
                 return
             }
-            
-            guard let data = data else {
-                completion(.failure("Nenhum dado recebido do servidor"))
-                return
-            }
-            
-            print("--- DADOS DA RESPOSTA ---")
-            print("Tamanho da resposta: \(data.count) bytes")
-            
-            guard let responseString = String(data: data, encoding: .utf8) else {
-                completion(.failure("Erro ao decodificar resposta do servidor"))
-                return
-            }
-            
-            print("Conteúdo da resposta:")
-            print(responseString)
             
             // Processar a resposta JSON
             do {

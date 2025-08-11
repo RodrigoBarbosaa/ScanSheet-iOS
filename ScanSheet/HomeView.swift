@@ -42,18 +42,9 @@ struct HomeView: View {
                 VStack(spacing: 20) {
                     // App icon
                     ZStack {
-                        RoundedRectangle(cornerRadius: 20)
-                            .fill(
-                                LinearGradient(
-                                    colors: [Color.blue.opacity(0.8), Color.cyan.opacity(0.6)],
-                                    startPoint: .topLeading,
-                                    endPoint: .bottomTrailing
-                                )
-                            )
+                        Image("SSLogoRounded")
+                            .resizable()
                             .frame(width: 80, height: 80)
-                            .shadow(color: .black.opacity(0.3), radius: 10, x: 0, y: 5)
-                        
-                        Image(systemName: "doc.text")
                             .font(.system(size: 35, weight: .medium))
                             .foregroundColor(.white)
                     }
