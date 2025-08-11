@@ -58,7 +58,7 @@ struct HomeView: View {
                     }
                     
                     // Description
-                    Text("Transform any table or spreadsheet photo into a fully editable Excel file with AI-powered precision")
+                    Text("Transforme qualquer foto de uma tabela em um arquivo CSV editável")
                         .font(.system(size: 16, weight: .regular))
                         .foregroundColor(.white.opacity(0.9))
                         .multilineTextAlignment(.center)
@@ -73,16 +73,16 @@ struct HomeView: View {
                 VStack(spacing: 16) {
                     ActionCard(
                         icon: "camera.fill",
-                        title: "Upload Spreadsheet",
-                        subtitle: "Via Camera or Gallery",
+                        title: "Upload de Tabela",
+                        subtitle: "Via Camera ou Gallery",
                         gradientColors: [Color.blue.opacity(0.8), Color.cyan.opacity(0.6)],
                         action: {router.navigate(to: .fichaSelection)}
                         
                     )
                     ActionCard(
                         icon: "square.and.arrow.up.on.square",
-                        title: "Share Sheets",
-                        subtitle: "Export and collaborate easily",
+                        title: "Compartilhar",
+                        subtitle: "Exporte e colabore",
                         gradientColors: [Color.green.opacity(0.7), Color.mint.opacity(0.6)],
                         action: { router.navigate(to: .exportResults)}
                     )
